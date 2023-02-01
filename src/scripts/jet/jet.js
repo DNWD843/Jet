@@ -1,7 +1,19 @@
-import { JetDOMComponent } from "./classes.js";
+import { JetCompositeComponentWrapper } from "./classes.js";
+import { TopLevelWrapper } from "./TopLevelWrapper.js";
+
 
 export const Jet = {
-  createELement(type, props, children) {
+  createClass(spec) {
+    function Constructor(props) {
+      this.props = props;
+    }
+
+    Constructor.prototype.render = spec.render;
+
+    return Constructor;
+  },
+
+  createElement(type, props, children) {
     const element = {
       type,
       props: props || {},
@@ -15,7 +27,9 @@ export const Jet = {
   },
 
   render(element, container) {
-    const componentInstance = new JetDOMComponent(element);
+    const wrapperElement = this.createElement(TopLevelWrapper, element);
+    const componentInstance = new JetCompositeComponentWrapper(wrapperElement);
+
     return componentInstance.mountComponent(container);
   }
 };
