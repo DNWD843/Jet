@@ -1,5 +1,6 @@
 import { JetCompositeComponentWrapper } from "./classes.js";
 import { TopLevelWrapper } from "./TopLevelWrapper.js";
+import { JetReconciler } from "./JetReconciler.js";
 
 
 export const Jet = {
@@ -8,7 +9,7 @@ export const Jet = {
       this.props = props;
     }
 
-    Constructor.prototype.render = spec.render;
+    Constructor.prototype = Object.assign(Constructor.prototype, spec);
 
     return Constructor;
   },
@@ -30,6 +31,6 @@ export const Jet = {
     const wrapperElement = this.createElement(TopLevelWrapper, element);
     const componentInstance = new JetCompositeComponentWrapper(wrapperElement);
 
-    return componentInstance.mountComponent(container);
+    return JetReconciler.mountComponent(componentInstance, container);
   }
 };

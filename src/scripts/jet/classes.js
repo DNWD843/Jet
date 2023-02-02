@@ -1,3 +1,6 @@
+import { JetReconciler } from "./JetReconciler.js";
+import { instantiateJetComponent } from "./helpers.js";
+
 export class JetDOMComponent {
   constructor(element) {
     this._currentElement = element;
@@ -31,18 +34,32 @@ export class JetCompositeComponentWrapper {
 
   mountComponent(container) {
     const Component = this._currentElement.type;
-    const componentInstance = new Component(this._currentElement.props);
-    let element = componentInstance.render();
+    this._instance = new Component(this._currentElement.props);
 
-    while (typeof element.type === 'function') {
-      // const Component = element.type;
-      // const componentInstance = new Component(element.props);
-      // element = componentInstance.render();
-      element = (new element.type(element.props)).render();
+    if (this._instance.componentWillMount) {
+      this._instance.componentWillMount();
     }
 
-    const domComponentInstance = new JetDOMComponent(element);
+    const markup = this.performInitialMount(container);
 
-    return domComponentInstance.mountComponent(container);
+    if (this._instance.componentDidMount) {
+      this._instance.componentDidMount();
+    }
+
+    return markup;
+  }
+
+  performInitialMount(container) {
+    const renderedElement = this._instance.render();
+
+    const child = instantiateJetComponent({
+      element: renderedElement,
+      domComponentClass: JetDOMComponent,
+      compositeComponentClass: JetCompositeComponentWrapper,
+    });
+
+    this._renderedElement = child;
+
+    return JetReconciler.mountComponent(child, container);
   }
 }
