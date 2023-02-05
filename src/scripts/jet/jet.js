@@ -1,17 +1,14 @@
-import { JetCompositeComponentWrapper } from "./classes.js";
-import { TopLevelWrapper } from "./TopLevelWrapper.js";
-import { JetReconciler } from "./JetReconciler.js";
 import { getTopLevelComponentInContainer, renderNewRootComponent, updateRootComponent } from "./helpers.js";
 
 export const Jet = {
-  createClass(spec) {
-    function Constructor(props) {
+  createClass(config) {
+    function ComponentClass(props) {
       this.props = props;
     }
 
-    Constructor.prototype = Object.assign(Constructor.prototype, spec);
+    ComponentClass.prototype = Object.assign(ComponentClass.prototype, config);
 
-    return Constructor;
+    return ComponentClass;
   },
 
   createElement(type, props, children) {

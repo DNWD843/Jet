@@ -14,13 +14,14 @@ export function renderNewRootComponent(element, container) {
   const wrappedElement = this.createElement(TopLevelWrapper, element);
   const componentInstance = new JetCompositeComponentWrapper(wrappedElement);
 
-  container._jetComponentInstance = componentInstance._renderedComponent;
+  const markup = JetReconciler.mountComponent(componentInstance, container);
+  container.__jetComponentInstance = componentInstance._renderedComponent;
 
-  return JetReconciler.mountComponent(componentInstance, container);
+  return markup;
 }
 
 export function getTopLevelComponentInContainer(container) {
-  return container._jetComponentInstance;
+  return container.__jetComponentInstance;
 }
 export function updateRootComponent(prevComponent, nextElement) {
   JetReconciler.receiveComponent(prevComponent, nextElement);
