@@ -1,7 +1,7 @@
 import { JetCompositeComponentWrapper } from "./classes.js";
 import { TopLevelWrapper } from "./TopLevelWrapper.js";
 import { JetReconciler } from "./JetReconciler.js";
-
+import { getTopLevelComponentInContainer, renderNewRootComponent, updateRootComponent } from "./helpers.js";
 
 export const Jet = {
   createClass(spec) {
@@ -28,9 +28,12 @@ export const Jet = {
   },
 
   render(element, container) {
-    const wrappedElement = this.createElement(TopLevelWrapper, element);
-    const componentInstance = new JetCompositeComponentWrapper(wrappedElement);
+    const prevComponent = getTopLevelComponentInContainer(container);
 
-    return JetReconciler.mountComponent(componentInstance, container);
+    if (prevComponent) {
+      return updateRootComponent(prevComponent, element);
+    } else {
+      return renderNewRootComponent.call(this, element, container);
+    }
   }
 };

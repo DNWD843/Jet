@@ -25,6 +25,47 @@ export class JetDOMComponent {
 
     return domElement;
   }
+
+  updateComponent(prevElement, nextElement) {
+    const prevProps = prevElement.props;
+    const nextProps = nextElement.props;
+
+    this._updateDOMProperties(prevProps, nextProps);
+    this._updateDOMChildren(prevProps, nextProps);
+
+    this._currentElement = nextElement;
+  }
+
+  _updateDOMProperties(prevProps, nextProps) {
+    // nothing to do! I'll explain why below
+  }
+  _updateDOMChildren(prevProps, nextProps) {
+    const  prevContent = prevProps.children;
+    const nextContent = nextProps.children;
+
+    if (!nextContent) {
+      this.updateTextContent('');
+    } else if (prevContent !== nextContent) {
+      this.updateTextContent(String(nextContent));
+    }
+  }
+
+  updateTextContent(text) {
+    const node = this._hostNode;
+
+    const firstChild = node.firstChild;
+
+    if (firstChild && firstChild === node.lastChild && firstChild.nodeType === Node.TEXT_NODE ) {
+      firstChild.nodeValue = text;
+      return;
+    }
+    node.textContent = text;
+  }
+
+  receiveComponent(nextElement) {
+    const prevElement = this._currentElement;
+    this.updateComponent(prevElement, nextElement);
+  }
 }
 
 export class JetCompositeComponentWrapper {
@@ -58,8 +99,50 @@ export class JetCompositeComponentWrapper {
       compositeComponentClass: JetCompositeComponentWrapper,
     });
 
-    this._renderedElement = child;
+    this._renderedComponent = child;
 
     return JetReconciler.mountComponent(child, container);
+  }
+
+  _updateRenderedComponent() {
+    const prevComponentInstance = this._renderedComponent;
+    const instance = this._instance;
+    const nextRenderedElement = instance.render();
+
+    JetReconciler.receiveComponent(prevComponentInstance, nextRenderedElement);
+  }
+
+  _performComponentUpdate(nextElement, nextProps) {
+    this._currentElement = nextElement;
+
+    const instance = this._instance;
+    instance.props = nextProps;
+
+    this._updateRenderedComponent();
+  }
+  updateComponent(prevElement, nextElement) {
+    const nextProps = nextElement.props;
+    const instance = this._instance;
+
+    if (instance.componentWillReceiveProps) {
+      instance.componentWillReceiveProps(nextProps);
+    }
+
+    let shouldUpdate = true;
+
+    if (instance.shouldComponentUpdate) {
+      shouldUpdate = instance.shouldComponentUpdate(nextProps);
+    }
+
+    if (shouldUpdate) {
+      this._performComponentUpdate(nextElement, nextProps);
+    } else {
+      instance.props = nextProps;
+    }
+  }
+
+  receiveComponent(nextElement) {
+    const prevElement = this._currentElement;
+    this.updateComponent(prevElement, nextElement);
   }
 }
