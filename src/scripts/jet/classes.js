@@ -40,7 +40,7 @@ export class JetDOMComponent {
     // nothing to do! I'll explain why below
   }
   _updateDOMChildren(prevProps, nextProps) {
-    const  prevContent = prevProps.children;
+    const prevContent = prevProps.children;
     const nextContent = nextProps.children;
 
     if (!nextContent) {
@@ -52,14 +52,13 @@ export class JetDOMComponent {
 
   updateTextContent(text) {
     const node = this._hostNode;
+    node.textContent = text;
 
     const firstChild = node.firstChild;
 
     if (firstChild && firstChild === node.lastChild && firstChild.nodeType === Node.TEXT_NODE ) {
       firstChild.nodeValue = text;
-      return;
     }
-    node.textContent = text;
   }
 
   receiveComponent(nextElement) {
@@ -114,7 +113,6 @@ export class JetCompositeComponentWrapper {
 
   _performComponentUpdate(nextElement, nextProps) {
     this._currentElement = nextElement;
-
     const instance = this._instance;
     instance.props = nextProps;
 
