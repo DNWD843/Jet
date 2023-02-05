@@ -33,3 +33,10 @@ Jet.render(
   Jet.createElement('button', { type: 'button', className: 'content__button' }, 'Press to know more'),
   rootContainer,
 );
+
+setTimeout(() => {
+  Jet.render(
+    Jet.createElement(Text, { isTitle: true, className: 'content__title' }, 'Hello again, updated Jet!'),
+    rootContainer,
+  );
+}, 2000);
