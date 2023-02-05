@@ -28,8 +28,8 @@ export const Jet = {
   },
 
   render(element, container) {
-    const wrapperElement = this.createElement(TopLevelWrapper, element);
-    const componentInstance = new JetCompositeComponentWrapper(wrapperElement);
+    const wrappedElement = this.createElement(TopLevelWrapper, element);
+    const componentInstance = new JetCompositeComponentWrapper(wrappedElement);
 
     return JetReconciler.mountComponent(componentInstance, container);
   }

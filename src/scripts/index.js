@@ -3,31 +3,33 @@ import { Jet } from './jet';
 
 const H1 = Jet.createClass({
   render() {
-    return Jet.createElement('h1', { className: 'content__title' }, this.props.text);
+    return Jet.createElement('h1', { ...this.props });
   }
 })
 
 const Text = Jet.createClass({
   render() {
-    if (this.props.isTitle) {
-      return Jet.createElement(H1, { text: this.props.text });
+    const { isTitle, ...props } = this.props;
+
+    if (isTitle) {
+      return Jet.createElement(H1, { ...props });
     }
 
-    return Jet.createElement('p', { className: 'content__subTitle'}, this.props.text)
+    return Jet.createElement('p', { ...props })
   }
 })
 
 Jet.render(
-  Jet.createElement(Text, { isTitle: true, text: 'Hello, Jet!' }),
+  Jet.createElement(Text, { isTitle: true, className: 'content__title' }, 'Hello, Jet!'),
   rootContainer,
 );
 
 Jet.render(
-  Jet.createElement(Text, { isTitle: false, text: 'Let`s talk about Jet' }),
+  Jet.createElement(Text, { isTitle: false, className: 'content__subTitle' }, 'Let`s talk about Jet?'),
   rootContainer,
 );
 
 Jet.render(
-  Jet.createElement('button', { type: 'button', className: 'content__button' }, 'simple button'),
+  Jet.createElement('button', { type: 'button', className: 'content__button' }, 'Press to know more'),
   rootContainer,
 );
