@@ -5,5 +5,9 @@ export const JetReconciler = {
 
   receiveComponent(internalInstance, nextElement) {
     internalInstance.receiveComponent(nextElement);
+  },
+
+  performUpdateIfNecessary(internalInstance) {
+    internalInstance.performUpdateIfNecessary();
   }
 };

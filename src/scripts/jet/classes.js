@@ -1,5 +1,6 @@
 import { JetReconciler } from "./JetReconciler.js";
 import { instantiateJetComponent } from "./helpers.js";
+import { JetInstanceMap } from "./instanceMap.js";
 
 export class JetDOMComponent {
   constructor(element) {
@@ -74,16 +75,19 @@ export class JetCompositeComponentWrapper {
 
   mountComponent(container) {
     const Component = this._currentElement.type;
-    this._instance = new Component(this._currentElement.props);
+    const componentInstance = new Component(this._currentElement.props);
+    this._instance = componentInstance;
 
-    if (this._instance.componentWillMount) {
-      this._instance.componentWillMount();
+    JetInstanceMap.set(componentInstance, this);
+
+    if (componentInstance.componentWillMount) {
+      componentInstance.componentWillMount();
     }
 
     const markup = this.performInitialMount(container);
 
-    if (this._instance.componentDidMount) {
-      this._instance.componentDidMount();
+    if (componentInstance.componentDidMount) {
+      componentInstance.componentDidMount();
     }
 
     return markup;
@@ -111,10 +115,11 @@ export class JetCompositeComponentWrapper {
     JetReconciler.receiveComponent(prevComponentInstance, nextRenderedElement);
   }
 
-  _performComponentUpdate(nextElement, nextProps) {
+  _performComponentUpdate(nextElement, nextProps, nextState) {
     this._currentElement = nextElement;
     const instance = this._instance;
     instance.props = nextProps;
+    instance.state = nextState;
 
     this._updateRenderedComponent();
   }
@@ -122,11 +127,16 @@ export class JetCompositeComponentWrapper {
     const nextProps = nextElement.props;
     const instance = this._instance;
 
-    if (instance.componentWillReceiveProps) {
+    const willReceive = prevElement !== nextElement;
+
+    if (willReceive && instance.componentWillReceiveProps) {
       instance.componentWillReceiveProps(nextProps);
     }
 
     let shouldUpdate = true;
+
+    const nextState = Object.assign({}, instance.state,this._pendingPartialState);
+    this._pendingPartialState = null;
 
     if (instance.shouldComponentUpdate) {
       shouldUpdate = instance.shouldComponentUpdate(nextProps);
@@ -136,7 +146,12 @@ export class JetCompositeComponentWrapper {
       this._performComponentUpdate(nextElement, nextProps);
     } else {
       instance.props = nextProps;
+      instance.state = nextState;
     }
+  }
+
+  performUpdateIfNecessary() {
+    this.updateComponent(this._currentElement, this._currentElement);
   }
 
   receiveComponent(nextElement) {
