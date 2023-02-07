@@ -14,27 +14,17 @@ export class JetDOMComponent {
 
     domElement.appendChild(textNode);
 
-    const { children, ...props } = this._currentElement.props;
-
-    Object.keys(props).forEach((key) => {
-      domElement[key] = props[key];
-    })
+    // const { children, ...props } = this._currentElement.props;
+    //
+    // Object.keys(props).forEach((key) => {
+    //   domElement[key] = props[key];
+    // })
 
     container.appendChild(domElement);
 
     this._hostNode = domElement;
 
     return domElement;
-  }
-
-  updateComponent(prevElement, nextElement) {
-    const prevProps = prevElement.props;
-    const nextProps = nextElement.props;
-
-    this._updateDOMProperties(prevProps, nextProps);
-    this._updateDOMChildren(prevProps, nextProps);
-
-    this._currentElement = nextElement;
   }
 
   _updateDOMProperties(prevProps, nextProps) {
@@ -60,6 +50,16 @@ export class JetDOMComponent {
     if (firstChild && firstChild === node.lastChild && firstChild.nodeType === Node.TEXT_NODE ) {
       firstChild.nodeValue = text;
     }
+  }
+
+  updateComponent(prevElement, nextElement) {
+    const prevProps = prevElement.props;
+    const nextProps = nextElement.props;
+
+    this._updateDOMProperties(prevProps, nextProps);
+    this._updateDOMChildren(prevProps, nextProps);
+
+    // this._currentElement = nextElement;
   }
 
   receiveComponent(nextElement) {
@@ -135,18 +135,18 @@ export class JetCompositeComponentWrapper {
 
     let shouldUpdate = true;
 
-    const nextState = Object.assign({}, instance.state,this._pendingPartialState);
-    this._pendingPartialState = null;
+    const nextState = Object.assign({}, instance.state, this._pendingPartialState);
+    // this._pendingPartialState = null;
 
     if (instance.shouldComponentUpdate) {
-      shouldUpdate = instance.shouldComponentUpdate(nextProps);
+      shouldUpdate = instance.shouldComponentUpdate(nextProps, nextState);
     }
 
     if (shouldUpdate) {
-      this._performComponentUpdate(nextElement, nextProps);
+      this._performComponentUpdate(nextElement, nextProps, nextState);
     } else {
       instance.props = nextProps;
-      instance.state = nextState;
+      // instance.state = nextState;
     }
   }
 
