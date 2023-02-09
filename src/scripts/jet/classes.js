@@ -14,11 +14,11 @@ export class JetDOMComponent {
 
     domElement.appendChild(textNode);
 
-    // const { children, ...props } = this._currentElement.props;
-    //
-    // Object.keys(props).forEach((key) => {
-    //   domElement[key] = props[key];
-    // })
+    const { children, ...props } = this._currentElement.props;
+
+    Object.keys(props).forEach((key) => {
+      domElement[key] = props[key];
+    })
 
     container.appendChild(domElement);
 
@@ -123,7 +123,32 @@ export class JetCompositeComponentWrapper {
 
     this._updateRenderedComponent();
   }
+
+  _processPendingState() {
+    const instance = this._instance;
+
+    if (!this._pendingPartialState) {
+      return instance.state;
+    }
+
+    let nextState = instance.state;
+
+    for (let i = 0; i < this._pendingPartialState.length; ++i) {
+      const partialState = this._pendingPartialState[i];
+
+      if (typeof partialState === 'function') {
+        nextState = partialState(nextState);
+      } else {
+        nextState = Object.assign(nextState, partialState);
+      }
+    }
+
+    this._pendingPartialState = null;
+
+    return nextState;
+  }
   updateComponent(prevElement, nextElement) {
+    this._rendering = true;
     const nextProps = nextElement.props;
     const instance = this._instance;
 
@@ -135,8 +160,7 @@ export class JetCompositeComponentWrapper {
 
     let shouldUpdate = true;
 
-    const nextState = Object.assign({}, instance.state, this._pendingPartialState);
-    // this._pendingPartialState = null;
+    const nextState = this._processPendingState();
 
     if (instance.shouldComponentUpdate) {
       shouldUpdate = instance.shouldComponentUpdate(nextProps, nextState);
@@ -146,8 +170,8 @@ export class JetCompositeComponentWrapper {
       this._performComponentUpdate(nextElement, nextProps, nextState);
     } else {
       instance.props = nextProps;
-      // instance.state = nextState;
     }
+    this._rendering = false;
   }
 
   performUpdateIfNecessary() {

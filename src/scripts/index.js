@@ -7,25 +7,25 @@ const MyComponent = Jet.createClass({
   },
 
   getInitialState() {
-    return { message: 'from getInitialState' };
+    return { message: this.props.message || 'initial message from getInitialState'};
   },
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ message: 'from componentWillReceiveProps' });
+    this.setState({ message: nextProps.message });
   },
 
   render() {
     this.renderCount += 1;
 
-    return Jet.createElement('h1', null, 'this is render ' + this.renderCount + '\n with state: ' + this.state?.message + ', and this prop: ' + this.props.prop)
+    return Jet.createElement('h1', { className: 'page-title', id: 'title' }, 'this is render ' + this.renderCount + '; ___ with state: ' + this.state?.message + ', ___ and this prop: ' + this.props.prop)
   }
 });
 
-Jet.render(Jet.createElement(MyComponent, { prop: 'first prop' }), rootContainer);
+Jet.render(Jet.createElement(MyComponent, { prop: 'first prop', message: 'first message' }), rootContainer);
 
 setTimeout(() => {
-  Jet.render(Jet.createElement(MyComponent, { prop: 'second prop' }), rootContainer);
-}, 2000);
+  Jet.render(Jet.createElement(MyComponent, { prop: 'second prop', message: 'second message' }), rootContainer);
+}, 4000);
 
 // const H1 = Jet.createClass({
 //   render() {
