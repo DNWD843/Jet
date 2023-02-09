@@ -11,7 +11,7 @@ const MyComponent = Jet.createClass({
   },
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ message: nextProps.message });
+    this.setState({ message: nextProps.message || '' });
   },
 
   render() {
