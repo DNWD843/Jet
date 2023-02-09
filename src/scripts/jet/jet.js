@@ -1,14 +1,22 @@
-import { getTopLevelComponentInContainer, renderNewRootComponent, updateRootComponent } from "./helpers.js";
+import {
+  getTopLevelComponentInContainer,
+  mixConfigIntoComponent,
+  renderNewRootComponent,
+  updateRootComponent,
+} from "./helpers.js";
+import { JetComponent } from "./components.js";
 
 export const Jet = {
   createClass(config) {
-    function ComponentClass(props) {
+    function Constructor(props) {
       this.props = props;
+      this.state = this.getInitialState ? this.getInitialState() : null;
     }
 
-    ComponentClass.prototype = Object.assign(ComponentClass.prototype, config);
+    Constructor.prototype = new JetComponent();
+    mixConfigIntoComponent(Constructor, config);
 
-    return ComponentClass;
+    return Constructor;
   },
 
   createElement(type, props, children) {

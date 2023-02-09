@@ -26,3 +26,10 @@ export function getTopLevelComponentInContainer(container) {
 export function updateRootComponent(prevComponent, nextElement) {
   JetReconciler.receiveComponent(prevComponent, nextElement);
 }
+
+export function mixConfigIntoComponent(Constructor, config) {
+  const proto = Constructor.prototype;
+  for (const key in config) {
+    proto[key] = config[key];
+  }
+}

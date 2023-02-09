@@ -1,5 +1,6 @@
 import { JetReconciler } from "./JetReconciler.js";
 import { instantiateJetComponent } from "./helpers.js";
+import { JetInstanceMap } from "./instanceMap.js";
 
 export class JetDOMComponent {
   constructor(element) {
@@ -24,16 +25,6 @@ export class JetDOMComponent {
     this._hostNode = domElement;
 
     return domElement;
-  }
-
-  updateComponent(prevElement, nextElement) {
-    const prevProps = prevElement.props;
-    const nextProps = nextElement.props;
-
-    this._updateDOMProperties(prevProps, nextProps);
-    this._updateDOMChildren(prevProps, nextProps);
-
-    this._currentElement = nextElement;
   }
 
   _updateDOMProperties(prevProps, nextProps) {
@@ -61,6 +52,16 @@ export class JetDOMComponent {
     }
   }
 
+  updateComponent(prevElement, nextElement) {
+    const prevProps = prevElement.props;
+    const nextProps = nextElement.props;
+
+    this._updateDOMProperties(prevProps, nextProps);
+    this._updateDOMChildren(prevProps, nextProps);
+
+    // this._currentElement = nextElement;
+  }
+
   receiveComponent(nextElement) {
     const prevElement = this._currentElement;
     this.updateComponent(prevElement, nextElement);
@@ -74,16 +75,19 @@ export class JetCompositeComponentWrapper {
 
   mountComponent(container) {
     const Component = this._currentElement.type;
-    this._instance = new Component(this._currentElement.props);
+    const componentInstance = new Component(this._currentElement.props);
+    this._instance = componentInstance;
 
-    if (this._instance.componentWillMount) {
-      this._instance.componentWillMount();
+    JetInstanceMap.set(componentInstance, this);
+
+    if (componentInstance.componentWillMount) {
+      componentInstance.componentWillMount();
     }
 
     const markup = this.performInitialMount(container);
 
-    if (this._instance.componentDidMount) {
-      this._instance.componentDidMount();
+    if (componentInstance.componentDidMount) {
+      componentInstance.componentDidMount();
     }
 
     return markup;
@@ -111,32 +115,67 @@ export class JetCompositeComponentWrapper {
     JetReconciler.receiveComponent(prevComponentInstance, nextRenderedElement);
   }
 
-  _performComponentUpdate(nextElement, nextProps) {
+  _performComponentUpdate(nextElement, nextProps, nextState) {
     this._currentElement = nextElement;
     const instance = this._instance;
     instance.props = nextProps;
+    instance.state = nextState;
 
     this._updateRenderedComponent();
   }
+
+  _processPendingState() {
+    const instance = this._instance;
+
+    if (!this._pendingPartialState) {
+      return instance.state;
+    }
+
+    let nextState = instance.state;
+
+    for (let i = 0; i < this._pendingPartialState.length; ++i) {
+      const partialState = this._pendingPartialState[i];
+
+      if (typeof partialState === 'function') {
+        nextState = partialState(nextState);
+      } else {
+        nextState = Object.assign(nextState, partialState);
+      }
+    }
+
+    this._pendingPartialState = null;
+
+    return nextState;
+  }
   updateComponent(prevElement, nextElement) {
+    this._rendering = true;
     const nextProps = nextElement.props;
     const instance = this._instance;
 
-    if (instance.componentWillReceiveProps) {
+    const willReceive = prevElement !== nextElement;
+
+    if (willReceive && instance.componentWillReceiveProps) {
       instance.componentWillReceiveProps(nextProps);
     }
 
     let shouldUpdate = true;
 
+    const nextState = this._processPendingState();
+
     if (instance.shouldComponentUpdate) {
-      shouldUpdate = instance.shouldComponentUpdate(nextProps);
+      shouldUpdate = instance.shouldComponentUpdate(nextProps, nextState);
     }
 
     if (shouldUpdate) {
-      this._performComponentUpdate(nextElement, nextProps);
+      this._performComponentUpdate(nextElement, nextProps, nextState);
     } else {
       instance.props = nextProps;
     }
+    this._rendering = false;
+  }
+
+  performUpdateIfNecessary() {
+    this.updateComponent(this._currentElement, this._currentElement);
   }
 
   receiveComponent(nextElement) {
