@@ -9,10 +9,10 @@ Main goal of Jet is a becoming of a good grasp of how React works, and when and 
 > Jet is based on React 15.3, in particular using ReactDOM and the stack reconciler. React 16 and beyond have changed a lot. Jet gives a general sense of how diffing works.  
 > But just keep in mind the implementation details are now quite out of date.     
 
-Jet is fully based on this [article](https://mattgreer.dev/articles/react-internals-part-one-basic-rendering/). Read it, if you want more details.  
+Jet is fully based on this [article](https://mattgreer.dev/articles/react-internals-part-one-basic-rendering/). Read it for more details.  
 
 ### How to use  
 
 Download release archive, unpack it, copy "jet" directory in your project.  
-Now, you can import Jet from "jet" directory in your javascript files.  
+Now, you can import Jet from "jet" directory into javascript files.  
 
