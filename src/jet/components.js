@@ -2,7 +2,6 @@ import { JetReconciler } from "./JetReconciler.js";
 import { JetInstanceMap } from "./instanceMap.js";
 
 export function JetComponent() {
-
 }
 
 JetComponent.prototype.setState = function(partialState) {
