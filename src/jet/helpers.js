@@ -2,8 +2,11 @@ import { TopLevelWrapper } from "./TopLevelWrapper.js";
 import { JetCompositeComponentWrapper } from "./classes.js";
 import { JetReconciler } from "./JetReconciler.js";
 
+export function isObject(object) {
+  return !Array.isArray(object) && typeof object === 'object' && object !== null;
+}
 export function instantiateJetComponent({ element, domComponentClass, compositeComponentClass }) {
-  if (typeof element.type === 'string') {
+  if (typeof element.type === 'string' || isObject(element.type)) {
     return new domComponentClass(element);
   } else if (typeof element.type === 'function') {
     return new compositeComponentClass(element);
