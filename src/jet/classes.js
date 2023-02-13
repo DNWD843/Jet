@@ -1,5 +1,5 @@
 import { JetReconciler } from "./JetReconciler.js";
-import { instantiateJetComponent } from "./helpers.js";
+import { instantiateJetComponent, isObject } from "./helpers.js";
 import { JetInstanceMap } from "./instanceMap.js";
 
 export class JetDOMComponent {
@@ -8,12 +8,24 @@ export class JetDOMComponent {
   }
 
   mountComponent(container) {
+    const domElement = this._createDomElementWithChildren();
+
+    container.appendChild(domElement);
+
+    this._hostNode = domElement;
+
+    return domElement;
+  }
+
+  _createDomElementWithChildren() {
     const domElement = document.createElement(this._currentElement.type);
     const { children, ...props } = this._currentElement.props;
 
     Object.keys(props).forEach((key) => {
       domElement[key] = props[key];
     })
+
+    if (!children) return domElement;
 
     if (typeof children === 'string') {
       const textNode = document.createTextNode(children);
@@ -22,21 +34,25 @@ export class JetDOMComponent {
 
     if (Array.isArray(children)) {
       children.forEach(child => {
-        const component = new JetDOMComponent(child);
-        const childElement = component.mountComponent(domElement);
+        const childElement = this._renderChild(child, domElement);
         domElement.appendChild(childElement);
       })
-    } else if (typeof children === 'object' && Object.hasOwn(children, 'type')) {
-      const component = new JetDOMComponent(children);
-      const childElement = component.mountComponent(domElement);
+    } else if (isObject(children)) {
+      const childElement = this._renderChild(children, domElement);
       domElement.appendChild(childElement);
     }
 
-    container.appendChild(domElement);
-
-    this._hostNode = domElement;
-
     return domElement;
+  }
+
+  _renderChild(child, container) {
+    const component = instantiateJetComponent({
+      element: child,
+      domComponentClass: JetDOMComponent,
+      compositeComponentClass: JetCompositeComponentWrapper,
+    });
+
+    return JetReconciler.mountComponent(component, container);
   }
 
   _updateDOMProperties(prevProps, nextProps) {
@@ -101,6 +117,7 @@ export class JetCompositeComponentWrapper {
     if (componentInstance.componentDidMount) {
       componentInstance.componentDidMount();
     }
+
 
     return markup;
   }
