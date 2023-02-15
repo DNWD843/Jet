@@ -22,7 +22,7 @@ export class JetDOMComponent {
     const { children, ...props } = this._currentElement.props;
 
     Object.keys(props).forEach((key) => {
-      domElement[key] = props[key];
+      domElement[key.startsWith('on') ? key.toLowerCase() : key] = props[key];
     })
 
     if (!children) return domElement;
@@ -63,20 +63,27 @@ export class JetDOMComponent {
     const nextContent = nextProps.children;
 
     if (!nextContent) {
-      this.updateTextContent('');
+      this.updateContent(null);
     } else if (prevContent !== nextContent) {
-      this.updateTextContent(String(nextContent));
+      this.updateContent(nextContent);
     }
   }
 
-  updateTextContent(text) {
+  updateContent(newContent) {
     const node = this._hostNode;
-    node.textContent = text;
-
     const firstChild = node.firstChild;
 
+    if (typeof newContent === 'string') {
+      node.textContent = newContent;
+    }
+
     if (firstChild && firstChild === node.lastChild && firstChild.nodeType === Node.TEXT_NODE ) {
-      firstChild.nodeValue = text;
+      firstChild.nodeValue = newContent;
+    }
+
+    if (firstChild && firstChild === node.lastChild && firstChild.nodeType === Node.ELEMENT_NODE ) {
+      const childElement = this._renderChild(newContent, firstChild);
+      node.firstChild.replaceWith(childElement);
     }
   }
 
@@ -86,8 +93,6 @@ export class JetDOMComponent {
 
     this._updateDOMProperties(prevProps, nextProps);
     this._updateDOMChildren(prevProps, nextProps);
-
-    // this._currentElement = nextElement;
   }
 
   receiveComponent(nextElement) {

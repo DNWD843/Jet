@@ -1,6 +1,4 @@
-# Jet    
-
-# WORK IS STILL IN PROGRESS
+# Jet
 
 ### Simplified clone of the React    
 
