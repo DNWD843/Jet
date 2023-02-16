@@ -11,8 +11,13 @@ Main goal of Jet is a becoming of a good grasp of how React works, and when and 
 
 Jet is based on this [article](https://mattgreer.dev/articles/react-internals-part-one-basic-rendering/). Read it for more details and explanations.  
 
-### How to use  
+### Want to try?  
 
-Download release archive, unpack it, copy "jet" directory in your project.  
+Download project archive or clone the project, put "jet" directory into your project.  
 Now, you can import Jet from "jet" directory into javascript files.  
 
+### Demo  
+
+To see the code of demo project created with Jet follow [this link](https://github.com/DNWD843/jet-demo).
+
+To see deployed demo project just [click here](https://dnwd843.github.io/jet-demo/).
